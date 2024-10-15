@@ -1,2 +1,2 @@
 # Haskell_the_game
-A game made in Haskell where you and another player play as cannons, and must shot each other
+DOC: https://docs.google.com/document/d/1bPAGj64Dc7gKxz2paBIS54InxIzt53O7qZTqCM2f1wE/edit?usp=sharing
