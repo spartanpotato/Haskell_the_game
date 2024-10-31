@@ -59,7 +59,7 @@ executable Haskell-the-game
     import:           warnings
 
     -- .hs or .lhs file containing the Main module.
-    main-is:          Main.hs
+    main-is:          main.hs
 
     -- Modules included in this executable, other than Main.
     -- other-modules:
