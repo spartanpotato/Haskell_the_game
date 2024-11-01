@@ -37,12 +37,17 @@ data World = Game
     moveRight :: Bool,
     currentPlayer :: Int, -- Player1=1 Player2=2
     direction :: Int, -- izquierda=1 derecha=2
-    fuelBar :: (Float, Float, Float, Float), -- dimensiones de la barra del combustible
+    fuelBar :: (Float, Float, Float, Float), -- dimensiones de la barra del combustible (como el exterior, no la barra que vemos gastarse)
     amountFuel :: Float, -- Cantidad de combustible disponible
-    currentFuelBar :: (Float, Float, Float, Float), -- dimensiones de la barra del combustible disponible
-    usage :: Float, -- cuanto se usará de combustible en cada uso
-    offsetBar :: Float -- util actualizar la posición de la barra de combustible
+    currentFuelBar :: (Float, Float, Float, Float), -- dimensiones de la barra del combustible actualmente disponible
+    barWidth :: Float, -- ancho original de la barra de combustible disponible
+    shotUsage :: Float, -- cuanto se usará de combustible al disparar (20)
+    moveUsage :: Float, -- cuanto se usará de combustible al moverse el personaje (10)
+    cannonUsage :: Float, -- cuanto se usará de combustible al mover el cañon (5)
+    offsetBar :: Float, -- util actualizar la posición de la barra de combustible
+    percentage :: String
   } deriving Show
+
 
 --Deficion estado inicial del juego
 initialState :: World
@@ -55,18 +60,21 @@ initialState = Game
     moveRight = False,
     currentPlayer = 1,
     direction = 0,
-    fuelBar = (-200, 200, 200, 50),
-    amountFuel = fuel, 
-    currentFuelBar = (-200, 200, fuel, 31), -- (offsetX, offsetY, width - 20, width - 19)
-    usage = fuel / 100, -- ya que hay 100 de combustible por turno
-    offsetBar = -200
-  } where
-    fuel = getFuel (fuelBar initialState)
+    fuelBar = (-200, 200, 200, 50), 
+    amountFuel = 100, -- inicia en el maximo (antes: fuel)
+    currentFuelBar = (-200, 200, 180, 31), 
+    barWidth = 180,
+    shotUsage = 20, 
+    moveUsage = 10,
+    cannonUsage = 5,
+    offsetBar = -200,
+    percentage = "100%"
+  }
     
 
 --Definicion de funcion para convertir estado del juego en una imagen
 render :: World -> Picture  
-render game = pictures [player1, player2, mainFloor, mainPillar, mainFuelBar, mainTotalFuel]
+render game = pictures [player1, player2, mainFloor, mainPillar, mainFuelBar, mainTotalFuel, mainPercent]
   where
     player1 = uncurry translate (player1Loc game) $ color player1Color $ rectangleSolid 10 10
     player1Color = yellow' -- dark red
@@ -90,6 +98,7 @@ render game = pictures [player1, player2, mainFloor, mainPillar, mainFuelBar, ma
 
     mainFuelBar = makeFuelBar (fuelBar game)
     mainTotalFuel = totalFuel (currentFuelBar game)
+    mainPercent = showFuel (-290, 190, 0.2 , 0.2, amountFuel game)
 
 
 
@@ -149,7 +158,14 @@ handleKeys :: Event -> World -> World
 
 -- Player se mueve a la izquierda con a
 handleKeys (EventKey (Char 'a') Down _ _) game = 
-    game { moveLeft = True, moveRight = False, direction = 1}
+    let f = amountFuel game
+        u = moveUsage game
+        o = offsetBar game
+        b = barWidth game
+     in if ((f - u) > 0 ) 
+      then game {moveLeft = True, moveRight = False, direction = 1, amountFuel = f - u, 
+      currentFuelBar = (o - (u-1), 200, ((f - u) / 100) * b, 31), offsetBar = o - (u-1)} 
+      else game
 
 -- Player deja de moverse al dejar de presionar a
 handleKeys (EventKey (Char 'a') Up _ _) game = 
@@ -157,7 +173,14 @@ handleKeys (EventKey (Char 'a') Up _ _) game =
 
 -- Player se mueve a la derecha con d
 handleKeys (EventKey (Char 'd') Down _ _) game = 
-    game { moveRight = True, moveLeft = False, direction = 2}
+    let f = amountFuel game
+        u = moveUsage game
+        o = offsetBar game
+        b = barWidth game
+     in if ((f - u) > 0 ) 
+      then game {moveRight = True, moveLeft = False, direction = 2, amountFuel = f - u, 
+      currentFuelBar = (o - (u-1), 200, ((f - u) / 100) * b, 31), offsetBar = o - (u-1)} 
+      else game
 
 -- Player deja de moverse al dejar de presionar d
 handleKeys (EventKey (Char 'd') Up _ _) game = 
@@ -165,13 +188,14 @@ handleKeys (EventKey (Char 'd') Up _ _) game =
 
 
 -- Combustible se consume al hacer uso de el 
-handleKeys (EventKey (Char 'w') Up _ _) game = 
+handleKeys (EventKey (Char 'e') Up _ _) game = 
     let f = amountFuel game
-        u = usage game
+        u = shotUsage game
         o = offsetBar game
-     in if ((f - u) > 0 ) 
-      then game {amountFuel = f - u, currentFuelBar = (o - u/2, 200, f - u, 31), offsetBar = o - u/2} 
-      else game
+        b = barWidth game
+     in if ((f - u) >= 0 ) 
+      then game {amountFuel = f - u, currentFuelBar = (o - (u - 2), 200, ((f - u) / 100) * b, 31), offsetBar = o - (u - 2)} 
+      else game 
 
 -- Do nothing for all other events.
 handleKeys _ game = game

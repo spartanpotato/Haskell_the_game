@@ -1,4 +1,4 @@
-module Combustible(makeFuelBar, totalFuel, getFuel) where
+module Combustible(makeFuelBar, totalFuel, getFuel, showFuel) where
  
 import Graphics.Gloss
 import Graphics.Gloss.Data.ViewPort
@@ -16,9 +16,10 @@ totalFuel :: (Float, Float, Float, Float) -> Picture
 totalFuel (offsetX, offsetY, width, height) = 
     translate offsetX offsetY $ color lightPurple $ rectangleSolid width height
 
--- Funcion que entrega el "100" del combustible, la cantidad INICIAL, equivalente al tamaño de la barrita
+-- Funcion que entrega el ancho del combustible, la cantidad INICIAL, equivalente al tamaño de la barrita
 getFuel :: (Float, Float, Float, Float) -> Float
 getFuel (offsetX, offsetY, width, height) = width - 20
 
-
--- fuelUsage :: 
+-- scale : entre 0 1 -> imagen mas chica, mayor a 1 -> imagen mas grande
+showFuel :: (Float, Float, Float, Float, Float) -> Picture
+showFuel (offsetX, offsetY, sx, sy, amount) = translate offsetX offsetY $ Scale sx sy $ Color black $ Text $ show amount
