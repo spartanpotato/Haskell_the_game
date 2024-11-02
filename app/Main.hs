@@ -209,7 +209,7 @@ handleKeys (EventKey (Char 'a') Down _ _) game =
         offset = offsetBar tank
         barW = barWidth tank
         newFuel = fuel - usage
-     in if newFuel > 0
+     in if (newFuel >= 0)
       then updateGame tank {moveLeft = True, moveRight = False, direction = 1, amountFuel = newFuel, 
                             currentFuelBar = (offset - (usage-1), 200, (newFuel / 100) * barW, 31),
                             offsetBar = offset - (usage-1)}
@@ -230,7 +230,7 @@ handleKeys (EventKey (Char 'd') Down _ _) game =
         offset = offsetBar tank
         barW = barWidth tank
         newFuel = fuel - usage
-    in if newFuel > 0
+    in if (newFuel >= 0)
       then updateGame tank {moveRight = True, moveLeft = False, direction = 2, amountFuel = newFuel, 
                             currentFuelBar = (offset - (usage-1), 200, (newFuel / 100) * barW, 31),
                             offsetBar = offset - (usage-1)} 
@@ -239,12 +239,12 @@ handleKeys (EventKey (Char 'd') Down _ _) game =
         updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
 
 -- Player deja de moverse al dejar de presionar d
-handleKeys (EventKey (Char 'd') Up _ _) game = updateGame (currentTank game) {moveLeft = False}
+handleKeys (EventKey (Char 'd') Up _ _) game = updateGame (currentTank game) {moveRight = False}
     where
         updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
 
 
--- Combustible se consume al hacer uso de el 
+-- Combustible se consume al disparar
 handleKeys (EventKey (Char 'e') Up _ _) game = 
     let tank = currentTank game
         fuel = amountFuel tank
@@ -252,12 +252,42 @@ handleKeys (EventKey (Char 'e') Up _ _) game =
         offset = offsetBar tank
         barW = barWidth tank
         newFuel = fuel - usage
-    in if newFuel > 0
+    in if (newFuel >= 0)
       then updateGame tank {amountFuel = newFuel, currentFuelBar = (offset - (usage - 2), 200, (newFuel / 100) * barW, 31),
                             offsetBar = offset - (usage - 2)} 
       else game 
     where
         updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
+
+-- Gasto al usar el cañon
+handleKeys (EventKey (Char 'w') Up _ _) game = 
+    let tank = currentTank game
+        fuel = amountFuel tank
+        usage = cannonUsage tank
+        offset = offsetBar tank
+        barW = barWidth tank
+        newFuel = fuel - usage
+    in if (newFuel >= 0)
+      then updateGame tank {amountFuel = newFuel, currentFuelBar = (offset - (usage - 0.5), 200, (newFuel / 100) * barW, 31),
+                            offsetBar = offset - (usage - 0.5)} 
+      else game 
+    where
+        updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
+-- Gasto al usar el cañon
+handleKeys (EventKey (Char 's') Up _ _) game = 
+    let tank = currentTank game
+        fuel = amountFuel tank
+        usage = cannonUsage tank
+        offset = offsetBar tank
+        barW = barWidth tank
+        newFuel = fuel - usage
+    in if (newFuel >= 0)
+      then updateGame tank {amountFuel = newFuel, currentFuelBar = (offset - (usage - 0.5), 200, (newFuel / 100) * barW, 31),
+                            offsetBar = offset - (usage - 0.5)} 
+      else game 
+    where
+        updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
+
 
 -- Do nothing for all other events.
 handleKeys _ game = game
