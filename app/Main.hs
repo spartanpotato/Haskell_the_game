@@ -5,7 +5,7 @@ import Graphics.Gloss.Data.ViewPort
 import Graphics.Gloss.Interface.Pure.Game
 import Combustible
 import Colores
-
+import System.Random
 --Definicion de la ventana
 width, height, offset :: Int
 width = 640
@@ -25,7 +25,10 @@ fps = 60
 
 
 main :: IO ()
-main =  play window background fps initialState render handleKeys update
+main = do
+    gen' <- newStdGen
+    let initialGame = initialState{gen = gen'}
+    play window background fps initialGame render handleKeys update
 
 --Definicion de tipo de dato que define el estado del juego, show solo esta para depurar
 data World = Game
@@ -45,7 +48,8 @@ data World = Game
     moveUsage :: Float, -- cuanto se usará de combustible al moverse el personaje (10)
     cannonUsage :: Float, -- cuanto se usará de combustible al mover el cañon (5)
     offsetBar :: Float, -- util actualizar la posición de la barra de combustible
-    percentage :: String
+    percentage :: String,
+    gen :: StdGen -- Para el calculo de probabilidades y aleatoridad
   } deriving Show
 
 
@@ -68,7 +72,8 @@ initialState = Game
     moveUsage = 10,
     cannonUsage = 5,
     offsetBar = -200,
-    percentage = "100%"
+    percentage = "100%",
+    gen = mkStdGen 0
   }
     
 
