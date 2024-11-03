@@ -20,4 +20,4 @@ orange' :: Color
 orange' = makeColor 1 0.5 0.2 1
 
 blue' :: Color
-blue' = makeColor (6/255) (75/255) (175/255) 1.0
+blue' = makeColor 0.2549 0.5961 1.0 1.0

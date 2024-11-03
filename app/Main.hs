@@ -5,6 +5,7 @@ import Graphics.Gloss.Data.ViewPort
 import Graphics.Gloss.Interface.Pure.Game
 import Combustible
 import Colores
+import Bala
 import System.Random
 
 --Definicion de la ventana
@@ -15,6 +16,9 @@ offset = 100
 
 window :: Display
 window = InWindow "Canonwars" (width, height) (offset, offset)
+
+initVelocity :: Float
+initVelocity = 100
 
 --Definicion color de fondo
 background :: Color
@@ -32,7 +36,10 @@ main = do
 
 data Tank = Tank
   { position :: (Float, Float)  -- Posición del tanque (x, y)
+  , health :: Int
   , angle    :: Float           -- Ángulo de dirección del tanque
+  , isShooting :: Bool          -- Estado del disparo
+  , currentBullet :: Bullet     -- Bala con los datos de posicion
   , bodySize :: (Float, Float)  -- Tamaño del cuerpo (ancho, alto)
   , cannonSize :: (Float, Float) -- Tamaño del cañón (ancho, largo)
   , colorBody :: Color          -- Color del cuerpo del tanque
@@ -66,7 +73,10 @@ initialState :: World
 initialState = Game {
     player1 = Tank {
         position = (-(fromIntegral width / 4), -(fromIntegral height / 2) + 25),
+        health = 30,
         angle = 45,
+        isShooting = False,
+        currentBullet = defaultBullet,
         bodySize = (60, 20),
         cannonSize = (6, 25),
         colorBody = dark $ dark green,
@@ -87,7 +97,10 @@ initialState = Game {
     },
     player2 = Tank {
         position = (fromIntegral width/4, -(fromIntegral height / 2) + 25),
+        health = 30,
         angle = 45,
+        isShooting = False,
+        currentBullet = defaultBullet,
         bodySize = (60, 20),
         cannonSize = (6, 25),
         colorBody = dark $ dark green,
@@ -110,10 +123,16 @@ initialState = Game {
     currentPlayer = 1,
     gen = mkStdGen 0
 }
-    
+
+-- Funciones para el movimiento del tanque
 currentTank :: World -> Tank
 currentTank game
   | currentPlayer game == 1 = player1 game
+  | otherwise               = player2 game
+
+opositeTank :: World -> Tank
+opositeTank game
+  | currentPlayer game == 2 = player1 game
   | otherwise               = player2 game
 
 setCurrentTank :: Tank -> World -> World
@@ -126,19 +145,22 @@ updatePosition dx tank = tank { position = (x + dx, y) }
   where
     (x, y) = position tank
 
+
+
 --Definicion de funcion para convertir estado del juego en una imagen
 render :: World -> Picture  
-render game = pictures [renderTank (player1 game), renderTank (player2 game), mainFloor, mainPillar, mainFuelBar, mainTotalFuel, mainPercent]
+render game = pictures [renderTank (player1 game), renderTank (player2 game), mainFloor, mainPillar, mainFuelBar, mainTotalFuel, mainPercent,makeBullet]
   where
     -- Funcion para renderizar un tanque
     renderTank :: Tank -> Picture
     renderTank tank = pictures [uncurry translate (position tank) $ color (colorBody tank) $ rectangleSolid (fst $ bodySize tank) (snd $ bodySize tank),
                                 uncurry translate (position tank) $ color (colorCannon tank) $ rectangleSolid (fst $ cannonSize tank) (snd $ cannonSize tank)]
 
+
     makeFloor :: Float -> Float -> Float -> Float -> Picture
     makeFloor offsetX offsetY floorWidth floorHeight = 
         translate offsetX offsetY $ color wallColor $ rectangleSolid floorWidth floorHeight
-
+    
     wallColor = darkBlue -- greyN 0.5
     mainFloor = makeFloor 0 (- (fromIntegral height/2) + 10) (fromIntegral width) 20
 
@@ -152,6 +174,7 @@ render game = pictures [renderTank (player1 game), renderTank (player2 game), ma
     mainFuelBar = makeFuelBar (fuelBar (currentTank game))
     mainTotalFuel = totalFuel (currentFuelBar (currentTank game))
     mainPercent = showFuel (-290, 190, 0.2 , 0.2, amountFuel (currentTank game))
+    makeBullet = drawBullet (currentBullet (currentTank game)) (isShooting (currentTank game))
 
 
 --Funcion que en base de segundos y si se esta presionando una tecla mueve al jugador
@@ -163,9 +186,55 @@ movePlayer _ game
     where
         tank = currentTank game
 
+moveBullet :: Bool -> Float -> Bullet -> (Bullet,Bool)
+moveBullet shoot seconds bullet
+    | shoot = (updateBullet seconds bullet)
+    | otherwise = (bullet,False)
+
+updateBullet :: Float -> Bullet -> (Bullet,Bool)
+updateBullet seconds bullet =
+    let (x, y) = bPosition bullet
+        (vx, vy) = bVelocity bullet
+        -- Actualizamos la velocidad vertical con la gravedad
+        newVy = vy + gravity * seconds
+        -- Calculamos la nueva posición en x e y
+        newX = x + vx * seconds
+        newY = y + newVy * seconds
+        -- Limitar la posición horizontal entre los bordes de la ventana
+        clampedX = min (fromIntegral width / 2) (max (-(fromIntegral width / 2)) newX)
+        -- Verificar colisiones y actualizar posición y velocidad
+        newPosition = if newY <= -(fromIntegral height / 2) + bulletRadius || 
+                         newX <= -(fromIntegral width / 2) + bulletRadius + 40|| 
+                         newX >= (fromIntegral width / 2) - bulletRadius - 40
+                      then (clampedX, max newY (-(fromIntegral height / 2) + bulletRadius +40 )) -- Posición en caso de colisión
+                      else (clampedX, newY)
+        -- Si colisiona, detener la bala; de lo contrario, aplicar la nueva velocidad
+        newVelocity = if newY <= -(fromIntegral height / 2) + bulletRadius || 
+                         newX <= -(fromIntegral width / 2) + bulletRadius -40 || 
+                         newX >= (fromIntegral width / 2) - bulletRadius - 40
+                      then (0, 0)
+                      else (vx, newVy)
+        shot = newVelocity /= (0,0)
+    in (bullet { bPosition = newPosition, bVelocity = newVelocity },shot)
+
+
 --Funcion que 
-update ::  Float -> World -> World
-update seconds = wallBounce . movePlayer seconds
+-- Epica funcion que
+update :: Float -> World -> World
+update seconds game =
+    let lastGame = wallBounce . movePlayer seconds $ game
+        tank = currentTank lastGame
+        
+        -- Obtener la nueva posición y estado de la bala disparada
+        (updatedBullet, shot) = moveBullet (isShooting tank) seconds (currentBullet tank)
+
+        -- Actualizar el tanque con la nueva bala y el estado de disparo
+        updatedTank = tank { currentBullet = updatedBullet, isShooting = shot }
+
+        -- Establecer el tanque actualizado en el juego
+    in setCurrentTank updatedTank lastGame
+
+
 
 
 type Radius = Float 
@@ -251,13 +320,17 @@ handleKeys (EventKey (Char 'e') Up _ _) game =
         usage = shotUsage tank
         offset = offsetBar tank
         barW = barWidth tank
+        (cannonW,cannonL) = cannonSize tank
+        currentAngle = angle tank
         newFuel = fuel - usage
-    in if (newFuel >= 0)
-      then updateGame tank {amountFuel = newFuel, currentFuelBar = (offset - (usage - 2), 200, (newFuel / 100) * barW, 31),
-                            offsetBar = offset - (usage - 2)} 
+        (newBullet, finalGen) = createBullet (position tank) (cannonL/2) currentAngle initVelocity (gen game)
+    in if (newFuel >= 0 && not(isShooting tank))
+      then (updateGame (tank {amountFuel = newFuel, currentFuelBar = (offset - (usage - 2), 200, (newFuel / 100) * barW, 31),
+                            offsetBar = offset - (usage - 2), isShooting = True,
+                            currentBullet = newBullet})){gen = finalGen}
       else game 
     where
-        updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
+        updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t} 
 
 -- Gasto al usar el cañon
 handleKeys (EventKey (Char 'w') Up _ _) game = 
