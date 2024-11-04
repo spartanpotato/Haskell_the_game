@@ -243,14 +243,14 @@ collitionBullet bullet tank =
     let (posBullX, posBullY) = bPosition bullet
         (tankX, tankY) = position tank
         (tankWidth, tankHeight) = bodySize tank
-    in (posBullX >=tankX-(tankWidth/2) && posBullX<= tankX+(tankWidth/2)
-    && posBullY >=tankY-(tankHeight/2) && posBullY <=tankY+(tankHeight/2))
+    in (posBullX >=tankX-(tankWidth/2 + bulletRadius) && posBullX<= tankX+(tankWidth/2 + bulletRadius)
+    && posBullY >=tankY-(tankHeight/2 + bulletRadius) && posBullY <=tankY+(tankHeight/2 + bulletRadius))
 
 collitionPillar :: Bullet -> (Float, Float, Float, Float) -> Bool
 collitionPillar bullet (x,y,w,h) =
     let (bX,bY) = bPosition bullet
-        halfW = w/2
-        halfH = h/2
+        halfW = w/2 + bulletRadius
+        halfH = h/2 + bulletRadius
     in (bX >= x-halfW && bX<=x+halfW && bY >= y-halfH && bY <=y+halfH)
 
 type Radius = Float 
@@ -269,9 +269,9 @@ wallCollision (x, _) radius = leftCollision || rightCollision || leftPillarColli
 wallBounce :: World -> World
 wallBounce game = 
     let tank = if currentPlayer game == 1 then player1 game else player2 game
-        radius = 3 -- radio debe ser el radio original del personaje menos la velocidad
         (x, y) = position tank
-        x' = if wallCollision (position tank) radius
+        (w, h) = bodySize tank
+        x' = if wallCollision (position tank) (w / 2)
              then if direction tank == 1  -- colision izquierda
                   then x + tankVel tank
                   else x - tankVel tank  -- colision derecha
