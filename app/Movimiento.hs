@@ -5,7 +5,8 @@ module Movimiento (currentTank,
                     movePlayer,
                     collitionPillar,
                     wallCollision,
-                    wallBounce) where
+                    wallBounce,
+                    moveCannon) where
 
 import Tanks
 import World
@@ -80,3 +81,17 @@ wallBounce game =
     in if currentPlayer game == 1
         then game {player1 = tank {position = (x', y)}}
         else game {player2 = tank {position = (x', y)}}
+
+moveCannon :: Float -> World -> World
+moveCannon _ game
+  | moveUp tank = setCurrentTank (tank {angle = newAngle}) game
+  | moveDown tank = setCurrentTank (tank {angle = newAngle}) game
+  | otherwise = game
+  where 
+    tank = currentTank game
+    newAngle 
+      | (currentPlayer game) == 1 && moveUp tank = max minAngle ((angle tank) - angleDiff)
+      | (currentPlayer game) == 1 && moveDown tank = min maxAngle ((angle tank) + angleDiff)
+      | (currentPlayer game) /= 1 && moveUp tank = min (-maxAngle) ((angle tank) + angleDiff)
+      | (currentPlayer game) /= 1 && moveDown tank = max (-minAngle) ((angle tank) - angleDiff)
+      | otherwise = angle tank

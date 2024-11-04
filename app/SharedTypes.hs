@@ -32,4 +32,6 @@ data Tank = Tank
     , moveUsage :: Float
     , cannonUsage :: Float
     , percentage :: String
+    , moveUp :: Bool
+    , moveDown :: Bool
 } deriving (Show)

@@ -45,9 +45,23 @@ render game = pictures [renderTank (player1 game), renderTank (player2 game), ma
   where
     -- Funcion para renderizar un tanque
     renderTank :: Tank -> Picture
-    renderTank tank = pictures [uncurry translate (position tank) $ color (colorBody tank) $ rectangleSolid (fst $ bodySize tank) (snd $ bodySize tank),
-                                uncurry translate (position tank) $ color (colorCannon tank) $ rectangleSolid (fst $ cannonSize tank) (snd $ cannonSize tank)]
+    renderTank tank =
+        let radius = 10  -- Radio del círculo en el que gira el cañón
+            rectWidth, rectHeight :: Float
+            rectWidth = fst $ cannonSize tank
+            rectHeight = snd $ cannonSize tank  -- Longitud del cañón (aumentado)
 
+            -- Calcular la posición del cañón
+            cannonBaseX = radius * sin (angle tank)
+            cannonBaseY = radius * cos (angle tank) + (snd $ bodySize tank) / 2
+
+            cannon = color (colorCannon tank) $ rectangleSolid rectWidth rectHeight
+
+            translatedCannon = translate (fst $ position tank) (snd $ position tank) $
+                               translate cannonBaseX cannonBaseY $
+                               rotate ((angle tank) * 180 / pi) $ cannon
+
+        in pictures [translatedCannon, uncurry translate (position tank) $ color (colorBody tank) $ rectangleSolid (fst $ bodySize tank) (snd $ bodySize tank)]
 
     makeFloor :: Float -> Float -> Float -> Float -> Picture
     makeFloor offsetX offsetY floorWidth floorHeight = 
@@ -73,7 +87,7 @@ render game = pictures [renderTank (player1 game), renderTank (player2 game), ma
 -- Epica funcion que
 update :: Float -> World -> World
 update seconds game =
-    let lastGame = wallBounce . movePlayer seconds $ game
+    let lastGame = wallBounce . movePlayer seconds . moveCannon seconds $ game
         tank = currentTank lastGame
         tank2 = opositeTank lastGame
         hpTank2 = health tank2
@@ -158,7 +172,7 @@ handleKeys (EventKey (Char 'e') Up _ _) game =
         updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t} 
 
 -- Gasto al usar el cañon
-handleKeys (EventKey (Char 'w') Up _ _) game = 
+handleKeys (EventKey (Char 'w') Down _ _) game = 
     let tank = currentTank game
         fuel = amountFuel tank
         usage = cannonUsage tank
@@ -167,22 +181,31 @@ handleKeys (EventKey (Char 'w') Up _ _) game =
         newFuel = fuel - usage
     in if (newFuel >= 0)
       then updateGame tank {amountFuel = newFuel, currentFuelBar = (offset - (usage - 0.5), 200, (newFuel / 100) * barW, 31),
-                            offsetBar = offset - (usage - 0.5)} 
+                            offsetBar = offset - (usage - 0.5), moveUp = True, moveDown = False} 
+      else game
+    where
+        updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
+
+handleKeys (EventKey (Char 'w') Up _ _) game = updateGame (currentTank game) {moveUp = False}
+    where
+        updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
+
+-- Gasto al usar el cañon
+handleKeys (EventKey (Char 's') Down _ _) game = 
+    let tank = currentTank game
+        fuel = amountFuel tank
+        usage = cannonUsage tank
+        offset = offsetBar tank
+        barW = barWidth tank
+        newFuel = fuel - usage
+    in if (newFuel >= 0)
+      then updateGame tank {amountFuel = newFuel, currentFuelBar = (offset - (usage - 0.5), 200, (newFuel / 100) * barW, 31),
+                            offsetBar = offset - (usage - 0.5), moveUp = False, moveDown = True} 
       else game 
     where
         updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
--- Gasto al usar el cañon
-handleKeys (EventKey (Char 's') Up _ _) game = 
-    let tank = currentTank game
-        fuel = amountFuel tank
-        usage = cannonUsage tank
-        offset = offsetBar tank
-        barW = barWidth tank
-        newFuel = fuel - usage
-    in if (newFuel >= 0)
-      then updateGame tank {amountFuel = newFuel, currentFuelBar = (offset - (usage - 0.5), 200, (newFuel / 100) * barW, 31),
-                            offsetBar = offset - (usage - 0.5)} 
-      else game 
+
+handleKeys (EventKey (Char 's') Up _ _) game = updateGame (currentTank game) {moveDown = False}
     where
         updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
 
