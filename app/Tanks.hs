@@ -1,4 +1,4 @@
-module Tanks (Tank(..), player1Tank, player2Tank) where
+module Tanks (Tank(..), player1Tank, player2Tank, angleDiff, minAngle, maxAngle) where
 
 import Graphics.Gloss
 import Colores
@@ -9,11 +9,16 @@ width, height :: Int
 width = 640
 height = 480
 
+angleDiff, minAngle, maxAngle :: Float
+angleDiff = 5 * (pi / 180)
+minAngle = 5 * (pi / 180)
+maxAngle = 85 * (pi / 180)
+
 player1Tank :: Tank
 player1Tank = Tank {
     position = (-(fromIntegral width / 4), -(fromIntegral height / 2) + 25),
     health = 30,
-    angle = 45,
+    angle = 45 * (pi / 180),
     isShooting = False,
     currentBullet = defaultBullet,
     bodySize = (60, 20),
@@ -32,14 +37,16 @@ player1Tank = Tank {
     moveUsage = 10,
     cannonUsage = 5,
     offsetBar = -200,
-    percentage = "100%"
+    percentage = "100%",
+    moveUp = False,
+    moveDown = False
 }
 
 player2Tank :: Tank
 player2Tank = Tank {
     position = (fromIntegral width/4, -(fromIntegral height / 2) + 25),
     health = 30,
-    angle = 45,
+    angle = -45 * (pi / 180),
     isShooting = False,
     currentBullet = defaultBullet,
     bodySize = (60, 20),
@@ -58,5 +65,7 @@ player2Tank = Tank {
     moveUsage = 10,
     cannonUsage = 5,
     offsetBar = -200,
-    percentage = "100%"
+    percentage = "100%",
+    moveUp = False,
+    moveDown = False
 }

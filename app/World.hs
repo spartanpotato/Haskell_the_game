@@ -24,6 +24,6 @@ initialState = Game {
     player1 = player1Tank,
     player2 = player2Tank,
     pillar = (0, -(fromIntegral height/2) + 70, 50, 100),
-    currentPlayer = 1,
+    currentPlayer = 2,
     gen = mkStdGen 0
 }    
