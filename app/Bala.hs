@@ -1,8 +1,17 @@
-module Bala (defaultBullet,Bullet(..),createBullet,bulletRadius,gravity,drawBullet) where
+module Bala (defaultBullet,
+            Bullet(..),
+            createBullet,
+            bulletRadius,
+            gravity,
+            drawBullet,
+            moveBullet,
+            updateBullet,
+            collitionBullet) where
 
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
 import System.Random
+import SharedTypes
 
 -- Definimos los parámetros de la simulación
 
@@ -10,11 +19,11 @@ bulletRadius, gravity :: Float
 gravity = -40
 bulletRadius = 7/2
 
-data Bullet = Bullet
-    { bPosition :: (Float, Float)
-    , bVelocity :: (Float, Float)  -- (velocidad horizontal, velocidad vertical)
-    , bDamage :: Int
-    } deriving (Show)
+
+width, height, offset :: Int
+width = 640
+height = 480
+offset = 100
 
 
 defaultBullet :: Bullet
@@ -59,3 +68,45 @@ calcDmg gen =
 -- Función que dibuja la bala
 drawBullet :: Bullet -> Bool -> Picture
 drawBullet (Bullet (x, y) _ _) value = if value then translate x y $ color red $ circleSolid (bulletRadius*2) else blank
+
+
+moveBullet :: Bool -> Float -> Bullet -> (Bullet,Bool)
+moveBullet shoot seconds bullet
+    | shoot = (updateBullet seconds bullet)
+    | otherwise = (bullet,False)
+
+
+updateBullet :: Float -> Bullet -> (Bullet,Bool)
+updateBullet seconds bullet =
+    let (x, y) = bPosition bullet
+        (vx, vy) = bVelocity bullet
+        -- Actualizamos la velocidad vertical con la gravedad
+        newVy = vy + gravity * seconds
+        -- Calculamos la nueva posición en x e y
+        newX = x + vx * seconds
+        newY = y + newVy * seconds
+        -- Limitar la posición horizontal entre los bordes de la ventana
+        clampedX = min ((fromIntegral width / 2)) (max (-(fromIntegral width / 2)) newX)
+        -- Verificar colisiones y actualizar posición y velocidad
+        newPosition = if newY <= -(fromIntegral height / 2) + bulletRadius + 20 || 
+                         newX <= -(fromIntegral width / 2) + bulletRadius|| 
+                         newX >= (fromIntegral width / 2) - bulletRadius
+                      then (clampedX, max newY ((fromIntegral height / 2) - bulletRadius )) -- Posición en caso de colisión
+                      else (clampedX, newY)
+        -- Si colisiona, detener la bala; de lo contrario, aplicar la nueva velocidad
+        newVelocity = if newY <= -(fromIntegral height / 2) + bulletRadius + 20 || 
+                         newX <= -(fromIntegral width / 2) + bulletRadius  || 
+                         newX >= (fromIntegral width / 2) - bulletRadius
+                      then (0, 0)
+                      else (vx, newVy)
+        shot = newVelocity /= (0,0)
+    in (bullet { bPosition = newPosition, bVelocity = newVelocity },shot)
+
+
+collitionBullet :: Bullet -> Tank -> Bool
+collitionBullet bullet tank =
+    let (posBullX, posBullY) = bPosition bullet
+        (tankX, tankY) = position tank
+        (tankWidth, tankHeight) = bodySize tank
+    in (posBullX >=tankX-(tankWidth/2 + bulletRadius) && posBullX<= tankX+(tankWidth/2 + bulletRadius)
+    && posBullY >=tankY-(tankHeight/2 + bulletRadius) && posBullY <=tankY+(tankHeight/2 + bulletRadius))
