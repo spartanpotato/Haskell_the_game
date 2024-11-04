@@ -201,17 +201,17 @@ updateBullet seconds bullet =
         newX = x + vx * seconds
         newY = y + newVy * seconds
         -- Limitar la posición horizontal entre los bordes de la ventana
-        clampedX = min (fromIntegral width / 2) (max (-(fromIntegral width / 2)) newX)
+        clampedX = min ((fromIntegral width / 2)) (max (-(fromIntegral width / 2)) newX)
         -- Verificar colisiones y actualizar posición y velocidad
-        newPosition = if newY <= -(fromIntegral height / 2) + bulletRadius || 
-                         newX <= -(fromIntegral width / 2) + bulletRadius + 40|| 
-                         newX >= (fromIntegral width / 2) - bulletRadius - 40
-                      then (clampedX, max newY (-(fromIntegral height / 2) + bulletRadius +40 )) -- Posición en caso de colisión
+        newPosition = if newY <= -(fromIntegral height / 2) + bulletRadius + 20 || 
+                         newX <= -(fromIntegral width / 2) + bulletRadius|| 
+                         newX >= (fromIntegral width / 2) - bulletRadius
+                      then (clampedX, max newY ((fromIntegral height / 2) - bulletRadius )) -- Posición en caso de colisión
                       else (clampedX, newY)
         -- Si colisiona, detener la bala; de lo contrario, aplicar la nueva velocidad
-        newVelocity = if newY <= -(fromIntegral height / 2) + bulletRadius || 
-                         newX <= -(fromIntegral width / 2) + bulletRadius -40 || 
-                         newX >= (fromIntegral width / 2) - bulletRadius - 40
+        newVelocity = if newY <= -(fromIntegral height / 2) + bulletRadius + 20 || 
+                         newX <= -(fromIntegral width / 2) + bulletRadius  || 
+                         newX >= (fromIntegral width / 2) - bulletRadius
                       then (0, 0)
                       else (vx, newVy)
         shot = newVelocity /= (0,0)
@@ -224,18 +224,34 @@ update :: Float -> World -> World
 update seconds game =
     let lastGame = wallBounce . movePlayer seconds $ game
         tank = currentTank lastGame
-        
+        tank2 = opositeTank lastGame
+        hpTank2 = health tank2
+        currentPillar = pillar lastGame
         -- Obtener la nueva posición y estado de la bala disparada
         (updatedBullet, shot) = moveBullet (isShooting tank) seconds (currentBullet tank)
-
+        isCollitionPillar = collitionPillar updatedBullet currentPillar
+        dmgBullet = bDamage updatedBullet
+        isCollition = collitionBullet updatedBullet tank2
         -- Actualizar el tanque con la nueva bala y el estado de disparo
-        updatedTank = tank { currentBullet = updatedBullet, isShooting = shot }
-
+        updatedTank2 = if isCollition then tank2 {health = hpTank2 - dmgBullet} else tank2
+        updatedTank = tank { currentBullet = updatedBullet, isShooting = (shot && not(isCollitionPillar) && not (isCollition)) }
         -- Establecer el tanque actualizado en el juego
-    in setCurrentTank updatedTank lastGame
+    in setCurrentTank updatedTank $ setCurrentTank updatedTank2 lastGame
 
+collitionBullet :: Bullet -> Tank -> Bool
+collitionBullet bullet tank =
+    let (posBullX, posBullY) = bPosition bullet
+        (tankX, tankY) = position tank
+        (tankWidth, tankHeight) = bodySize tank
+    in (posBullX >=tankX-(tankWidth/2) && posBullX<= tankX+(tankWidth/2)
+    && posBullY >=tankY-(tankHeight/2) && posBullY <=tankY+(tankHeight/2))
 
-
+collitionPillar :: Bullet -> (Float, Float, Float, Float) -> Bool
+collitionPillar bullet (x,y,w,h) =
+    let (bX,bY) = bPosition bullet
+        halfW = w/2
+        halfH = h/2
+    in (bX >= x-halfW && bX<=x+halfW && bY >= y-halfH && bY <=y+halfH)
 
 type Radius = Float 
 type Position = (Float, Float)

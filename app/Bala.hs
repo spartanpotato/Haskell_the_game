@@ -7,7 +7,7 @@ import System.Random
 -- Definimos los parámetros de la simulación
 
 bulletRadius, gravity :: Float
-gravity = -45
+gravity = -40
 bulletRadius = 7/2
 
 data Bullet = Bullet
