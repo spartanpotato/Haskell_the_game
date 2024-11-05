@@ -7,7 +7,7 @@ import Combustible
 import Colores
 import SharedTypes
 import Bala
-import Tanks --Contiene 
+import Tanks  
 import Movimiento
 import World
 import Vida
@@ -89,12 +89,12 @@ render game = pictures [renderTank (player1 game), renderTank (player2 game),
     mainPercent = showFuel (-85, 190, 0.2 , 0.2, amountFuel (currentTank game)) -- x = bar offset - (bar width / 2 ) - 10 
     makeBullet = drawBullet (currentBullet (currentTank game)) (isShooting (currentTank game))
 
-    player1HealthBar = makeHealthBar (healthBar (currentTank game))
-    player2HealthBar = makeHealthBar (healthBar (opositeTank game))
-    player1CurrentHealthBar = totalHealth (currentHealthBar (currentTank game))
-    player2CurrentHealthBar = totalHealth (currentHealthBar (opositeTank game))
-    player1HealthNum = showHealth (-50, 0, 0.2 , 0.2, fromIntegral (health (currentTank game)))
-    player2HealthNum = showHealth (50, 0, 0.2 , 0.2, fromIntegral (health (opositeTank game)))
+    player1HealthBar = makeHealthBar (healthBar (player1 game))
+    player2HealthBar = makeHealthBar (healthBar (player2 game))
+    player1CurrentHealthBar = totalHealth (currentHealthBar (player1 game))
+    player2CurrentHealthBar = totalHealth (currentHealthBar (player2 game))
+    player1HealthNum = showHealth (-283, 0, 0.2 , 0.2, fromIntegral (health (player1 game)))
+    player2HealthNum = showHealth (230, 0, 0.2 , 0.2, fromIntegral (health (player2 game)))
 
 
 checkTurn :: World -> World
@@ -129,10 +129,17 @@ update seconds game =
         dmgBullet = bDamage updatedBullet
         isCollition = collitionBullet updatedBullet tank2
         -- Actualizar el tanque con la nueva bala y el estado de disparo
-        updatedTank2 = if isCollition then tank2 {health = hpTank2 - dmgBullet} else tank2
-        updatedTank = tank { currentBullet = updatedBullet, isShooting = (shot && not (isCollition)) }
+        updatedTank2 = 
+            let newHeight = heightHealth - fromIntegral (dmgBullet * 5)
+                newHealth = hpTank2 - dmgBullet
+            in if (isCollition && isShooting tank) 
+                then tank2 {health = if newHealth >= 0 then newHealth else 0,
+                            currentHealthBar = (offsetXHealth, offsetYHealth - ( fromIntegral dmgBullet * 5) / 2,
+                                                widthHealth, if newHeight >= 0 then newHeight else 0)}  
+                else tank2
+        updatedTank = tank { currentBullet = updatedBullet, isShooting = (shot && not(isCollitionPillar) && not (isCollition)) }
         -- Establecer el tanque actualizado en el juego
-    in checkTurn . setCurrentTank updatedTank $ setCurrentTank updatedTank2 lastGame
+    in checkTurn . setCurrentTank updatedTank $ setOppositeTank updatedTank2 lastGame
 
 
 -- Respond to key events.

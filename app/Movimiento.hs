@@ -1,6 +1,7 @@
 module Movimiento (currentTank,
                     opositeTank,
                     setCurrentTank,
+                    setOppositeTank,
                     updatePosition,
                     movePlayer,
                     collitionPillar,
@@ -34,6 +35,11 @@ setCurrentTank :: Tank -> World -> World
 setCurrentTank tank game
   | currentPlayer game == 1 = game { player1 = tank }
   | otherwise               = game { player2 = tank }
+
+setOppositeTank :: Tank -> World -> World
+setOppositeTank tank game
+  | currentPlayer game == 1 = game { player2 = tank }
+  | otherwise               = game { player1 = tank }
 
 updatePosition :: Float -> Tank -> Tank
 updatePosition dx tank = tank { position = (x + dx, y) }
