@@ -26,16 +26,25 @@ defaultAmountFuel, defaultOffSetBar :: Float
 defaultFuelBar, defaulCurrentFuelBar :: (Float, Float, Float, Float)
 defaultAmountFuel = 100
 defaultOffSetBar = 0
-defaulCurrentFuelBar = (0, 200, 180, 31)
-defaultFuelBar = (0, 200, 180, 31)
+defaulCurrentFuelBar = (0, 200, 200, 31)
+defaultFuelBar = (0, 200, 200, 31)
+
+defaultHealth :: Int
+defaultHealthBarPlayer1, defaultHealthBarPlayer2 :: (Float, Float, Float, Float)
+defaultHealth = 30
+defaultHealthBarPlayer1 = (- (fromIntegral width / 10) * 4, (fromIntegral height / 4), 30, 150)
+defaultHealthBarPlayer2 = ((fromIntegral width / 10) * 4, (fromIntegral height / 4), 30, 150)
 
 player1Tank :: Tank
 player1Tank = Tank {
     position = (-(fromIntegral width / 4), -(fromIntegral height / 2) + 25),
-    health = 30,
-    angle = 45 * (pi / 180),
-    isShooting = False, -- quitar
-    currentBullet = defaultBullet, --quitar
+    health = defaultHealth,
+    healthBar = defaultHealthBarPlayer1,
+    currentHealthBar = defaultHealthBarPlayer1,
+    healthOffset = 0,
+    angle = 90 * (pi / 180),
+    isShooting = False, 
+    currentBullet = defaultBullet, 
     bodySize = (60, 20),
     cannonSize = (6, 25),
     colorBody = dark $ dark green,
@@ -47,7 +56,7 @@ player1Tank = Tank {
     fuelBar = defaultFuelBar,
     amountFuel = defaultAmountFuel,
     currentFuelBar = defaulCurrentFuelBar,
-    barWidth = 180,
+    barWidth = 200,
     shotUsage = 20, 
     moveUsage = 10,
     cannonUsage = 5,
@@ -60,7 +69,10 @@ player1Tank = Tank {
 player2Tank :: Tank
 player2Tank = Tank {
     position = (fromIntegral width/4, -(fromIntegral height / 2) + 25),
-    health = 30,
+    health = defaultHealth,
+    healthBar = defaultHealthBarPlayer2,
+    currentHealthBar = defaultHealthBarPlayer2,
+    healthOffset = 0,
     angle = -45 * (pi / 180),
     isShooting = False,
     currentBullet = defaultBullet,
@@ -75,7 +87,7 @@ player2Tank = Tank {
     fuelBar = defaultFuelBar,
     amountFuel = defaultAmountFuel,
     currentFuelBar = defaulCurrentFuelBar,
-    barWidth = 180,
+    barWidth = 200,
     shotUsage = 20, 
     moveUsage = 10,
     cannonUsage = 5,

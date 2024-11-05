@@ -12,6 +12,9 @@ data Bullet = Bullet
 data Tank = Tank
     { position :: (Float, Float)  -- Posición del tanque (x, y)
     , health :: Int
+    , healthBar :: (Float, Float, Float, Float)
+    , currentHealthBar :: (Float, Float, Float, Float)
+    , healthOffset :: Float
     , angle    :: Float           -- Ángulo de dirección del tanque
     , isShooting :: Bool          -- Estado del disparo
     , currentBullet :: Bullet     -- Bala con los datos de posicion

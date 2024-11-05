@@ -1,6 +1,7 @@
 module Colores(lightPurple, darkPurple,
                 darkBlue, yellow',
-                orange', blue') where
+                orange', blue',
+                darkRed) where
 
 import Graphics.Gloss
 
@@ -21,3 +22,8 @@ orange' = makeColor 1 0.5 0.2 1
 
 blue' :: Color
 blue' = makeColor 0.2549 0.5961 1.0 1.0
+
+darkRed :: Color
+darkRed = makeColor 180 0 0 1
+
+

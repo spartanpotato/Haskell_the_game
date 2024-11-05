@@ -10,6 +10,7 @@ import Bala
 import Tanks --Contiene 
 import Movimiento
 import World
+import Vida
 import System.Random
 
 --Definicion de la ventana
@@ -41,7 +42,13 @@ main = do
 
 --Definicion de funcion para convertir estado del juego en una imagen
 render :: World -> Picture  
-render game = pictures [renderTank (player1 game), renderTank (player2 game), mainFloor, mainPillar, mainFuelBar, mainTotalFuel, mainPercent,makeBullet]
+render game = pictures [renderTank (player1 game), renderTank (player2 game), 
+                        mainFloor, mainPillar, 
+                        mainFuelBar, mainTotalFuel, 
+                        player1HealthBar, player2HealthBar, 
+                        player1CurrentHealthBar, player2CurrentHealthBar,
+                        player1HealthNum, player2HealthNum,
+                        mainPercent,makeBullet]
   where
     -- Funcion para renderizar un tanque
     renderTank :: Tank -> Picture
@@ -79,8 +86,15 @@ render game = pictures [renderTank (player1 game), renderTank (player2 game), ma
 
     mainFuelBar = makeFuelBar (fuelBar (currentTank game))
     mainTotalFuel = totalFuel (currentFuelBar (currentTank game))
-    mainPercent = showFuel (-35, 190, 0.2 , 0.2, amountFuel (currentTank game)) -- x = bar offset - (bar width / 2 ) - 10 
+    mainPercent = showFuel (-85, 190, 0.2 , 0.2, amountFuel (currentTank game)) -- x = bar offset - (bar width / 2 ) - 10 
     makeBullet = drawBullet (currentBullet (currentTank game)) (isShooting (currentTank game))
+
+    player1HealthBar = makeHealthBar (healthBar (currentTank game))
+    player2HealthBar = makeHealthBar (healthBar (opositeTank game))
+    player1CurrentHealthBar = totalHealth (currentHealthBar (currentTank game))
+    player2CurrentHealthBar = totalHealth (currentHealthBar (opositeTank game))
+    player1HealthNum = showHealth (-50, 0, 0.2 , 0.2, fromIntegral (health (currentTank game)))
+    player2HealthNum = showHealth (50, 0, 0.2 , 0.2, fromIntegral (health (opositeTank game)))
 
 
 checkTurn :: World -> World
@@ -103,10 +117,11 @@ checkTurn game =
 -- Epica funcion que
 update :: Float -> World -> World
 update seconds game =
-    let lastGame = checkTurn . wallBounce . movePlayer seconds . moveCannon seconds $ game
+    let lastGame = wallBounce . movePlayer seconds . moveCannon seconds $ game
         tank = currentTank lastGame
         tank2 = opositeTank lastGame
         hpTank2 = health tank2
+        (offsetXHealth, offsetYHealth, widthHealth, heightHealth) = currentHealthBar tank2
         currentPillar = pillar lastGame
         -- Obtener la nueva posición y estado de la bala disparada
         (updatedBullet, shot) = moveBullet (isShooting tank) seconds (currentBullet tank)
@@ -115,9 +130,9 @@ update seconds game =
         isCollition = collitionBullet updatedBullet tank2
         -- Actualizar el tanque con la nueva bala y el estado de disparo
         updatedTank2 = if isCollition then tank2 {health = hpTank2 - dmgBullet} else tank2
-        updatedTank = tank { currentBullet = updatedBullet, isShooting = (shot && not(isCollitionPillar) && not (isCollition)) }
+        updatedTank = tank { currentBullet = updatedBullet, isShooting = (shot && not (isCollition)) }
         -- Establecer el tanque actualizado en el juego
-    in setCurrentTank updatedTank $ setCurrentTank updatedTank2 lastGame
+    in checkTurn . setCurrentTank updatedTank $ setCurrentTank updatedTank2 lastGame
 
 
 -- Respond to key events.
@@ -136,7 +151,7 @@ handleKeys (EventKey (Char 'a') Down _ _) game =
      in if (newFuel >= 0)
       then updateGame tank {moveLeft = True, moveRight = False, direction = 1, amountFuel = newFuel, 
                             currentFuelBar = (offset - (usage), 200, (newFuel / 100) * barW, 31),
-                            offsetBar = offset - (usage-1)}
+                            offsetBar = offset - (usage)}
       else game
     where
         updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
@@ -157,7 +172,7 @@ handleKeys (EventKey (Char 'd') Down _ _) game =
     in if (newFuel >= 0)
       then updateGame tank {moveRight = True, moveLeft = False, direction = 2, amountFuel = newFuel, 
                             currentFuelBar = (offset - (usage), 200, (newFuel / 100) * barW, 31),
-                            offsetBar = offset - (usage-1)} 
+                            offsetBar = offset - (usage)} 
       else game
     where
         updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
@@ -180,8 +195,8 @@ handleKeys (EventKey (Char 'e') Up _ _) game =
         newFuel = fuel - usage
         (newBullet, finalGen) = createBullet (position tank) (cannonL/2) currentAngle initVelocity (gen game)
     in if (newFuel >= 0 && not(isShooting tank))
-      then (updateGame (tank {amountFuel = newFuel, currentFuelBar = (offset - (usage - 2), 200, (newFuel / 100) * barW, 31),
-                            offsetBar = offset - (usage - 2), isShooting = True,
+      then (updateGame (tank {amountFuel = newFuel, currentFuelBar = (offset - (usage), 200, (newFuel / 100) * barW, 31),
+                            offsetBar = offset - (usage), isShooting = True,
                             currentBullet = newBullet})){gen = finalGen}
       else game 
     where
@@ -196,8 +211,8 @@ handleKeys (EventKey (Char 'w') Down _ _) game =
         barW = barWidth tank
         newFuel = fuel - usage
     in if (newFuel >= 0)
-      then updateGame tank {amountFuel = newFuel, currentFuelBar = (offset - (usage - 0.5), 200, (newFuel / 100) * barW, 31),
-                            offsetBar = offset - (usage - 0.5), moveUp = True, moveDown = False} 
+      then updateGame tank {amountFuel = newFuel, currentFuelBar = (offset - (usage), 200, (newFuel / 100) * barW, 31),
+                            offsetBar = offset - (usage), moveUp = True, moveDown = False} 
       else game
     where
         updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
@@ -215,8 +230,8 @@ handleKeys (EventKey (Char 's') Down _ _) game =
         barW = barWidth tank
         newFuel = fuel - usage
     in if (newFuel >= 0)
-      then updateGame tank {amountFuel = newFuel, currentFuelBar = (offset - (usage - 0.5), 200, (newFuel / 100) * barW, 31),
-                            offsetBar = offset - (usage - 0.5), moveUp = False, moveDown = True} 
+      then updateGame tank {amountFuel = newFuel, currentFuelBar = (offset - (usage), 200, (newFuel / 100) * barW, 31),
+                            offsetBar = offset - (usage), moveUp = False, moveDown = True} 
       else game 
     where
         updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}

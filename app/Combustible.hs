@@ -8,13 +8,13 @@ import Colores
 -- Hace la barrita del combustible 
 makeFuelBar :: (Float, Float, Float, Float) -> Picture
 makeFuelBar (offsetX, offsetY, width, height) = pictures [bar, insideBar] where
-    bar =  translate offsetX offsetY $ color darkPurple $ rectangleSolid width height
-    insideBar =  translate offsetX offsetY $ color white $ rectangleSolid (width - 10) (height - 10)
+    bar =  translate offsetX offsetY $ color black $ rectangleSolid (width + 6) (height + 6)
+    insideBar =  translate offsetX offsetY $ color white $ rectangleSolid width height
 
 -- Hace la barrita de la cantidad de combustible que hay
 totalFuel :: (Float, Float, Float, Float) -> Picture
 totalFuel (offsetX, offsetY, width, height) = 
-    translate offsetX offsetY $ color lightPurple $ rectangleSolid width height
+    translate offsetX offsetY $ color lightPurple $ rectangleSolid width height 
 
 -- Funcion que entrega el ancho del combustible, la cantidad INICIAL, equivalente al tamaño de la barrita
 getFuel :: (Float, Float, Float, Float) -> Float

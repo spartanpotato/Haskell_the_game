@@ -51,9 +51,9 @@ calcPos (xPos,yPos) angle radio =
 -- calculo del vector de velocidad de la bala
 calcVelocity:: Float -> Float -> StdGen -> ((Float,Float),StdGen)
 calcVelocity vel angle gen =
-    let (plusAngle,gen') = randomR(-5,5) gen :: (Float, StdGen)
+    let (plusAngle,gen') = randomR(((-5)*(pi/180)),(5*(pi/180))) gen :: (Float, StdGen)
         finalAngle = angle + plusAngle
-    in ((vel*cos(finalAngle*pi/180),vel*sin(finalAngle*pi/180)), gen')
+    in ((vel*cos(finalAngle),vel*sin(finalAngle)), gen')
 
 -- calculo de daño que realizara la bala
 calcDmg:: StdGen -> (Int,StdGen)
