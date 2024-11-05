@@ -23,10 +23,11 @@ minAngle = 5 * (pi / 180)
 maxAngle = 85 * (pi / 180)
 
 defaultAmountFuel, defaultOffSetBar :: Float
-defaulCurrentFuelBar :: (Float, Float, Float, Float)
+defaultFuelBar, defaulCurrentFuelBar :: (Float, Float, Float, Float)
 defaultAmountFuel = 100
-defaulCurrentFuelBar = (-200, 200, 180, 31)
-defaultOffSetBar = -200
+defaultOffSetBar = 0
+defaulCurrentFuelBar = (0, 200, 180, 31)
+defaultFuelBar = (0, 200, 180, 31)
 
 player1Tank :: Tank
 player1Tank = Tank {
@@ -43,7 +44,7 @@ player1Tank = Tank {
     moveLeft = False,
     moveRight = False,
     direction = 0,
-    fuelBar = (-200, 200, 200, 50),
+    fuelBar = defaultFuelBar,
     amountFuel = defaultAmountFuel,
     currentFuelBar = defaulCurrentFuelBar,
     barWidth = 180,
@@ -71,7 +72,7 @@ player2Tank = Tank {
     moveLeft = False,
     moveRight = False,
     direction = 0,
-    fuelBar = (-200, 200, 200, 50),
+    fuelBar = defaultFuelBar,
     amountFuel = defaultAmountFuel,
     currentFuelBar = defaulCurrentFuelBar,
     barWidth = 180,

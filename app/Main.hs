@@ -79,7 +79,7 @@ render game = pictures [renderTank (player1 game), renderTank (player2 game), ma
 
     mainFuelBar = makeFuelBar (fuelBar (currentTank game))
     mainTotalFuel = totalFuel (currentFuelBar (currentTank game))
-    mainPercent = showFuel (-290, 190, 0.2 , 0.2, amountFuel (currentTank game))
+    mainPercent = showFuel (-35, 190, 0.2 , 0.2, amountFuel (currentTank game)) -- x = bar offset - (bar width / 2 ) - 10 
     makeBullet = drawBullet (currentBullet (currentTank game)) (isShooting (currentTank game))
 
 
@@ -135,7 +135,7 @@ handleKeys (EventKey (Char 'a') Down _ _) game =
         newFuel = fuel - usage
      in if (newFuel >= 0)
       then updateGame tank {moveLeft = True, moveRight = False, direction = 1, amountFuel = newFuel, 
-                            currentFuelBar = (offset - (usage-1), 200, (newFuel / 100) * barW, 31),
+                            currentFuelBar = (offset - (usage), 200, (newFuel / 100) * barW, 31),
                             offsetBar = offset - (usage-1)}
       else game
     where
@@ -156,7 +156,7 @@ handleKeys (EventKey (Char 'd') Down _ _) game =
         newFuel = fuel - usage
     in if (newFuel >= 0)
       then updateGame tank {moveRight = True, moveLeft = False, direction = 2, amountFuel = newFuel, 
-                            currentFuelBar = (offset - (usage-1), 200, (newFuel / 100) * barW, 31),
+                            currentFuelBar = (offset - (usage), 200, (newFuel / 100) * barW, 31),
                             offsetBar = offset - (usage-1)} 
       else game
     where
