@@ -83,11 +83,27 @@ render game = pictures [renderTank (player1 game), renderTank (player2 game), ma
     makeBullet = drawBullet (currentBullet (currentTank game)) (isShooting (currentTank game))
 
 
+checkTurn :: World -> World
+checkTurn game =
+    let tank = currentTank game
+        currentPlayerFuel = amountFuel tank
+        existsBullet = isShooting tank
+        isMoving = (moveLeft tank || moveRight tank || moveDown tank || moveUp tank)
+    in if (currentPlayerFuel <= 0 && existsBullet == False && isMoving == False)
+        then changeTurn tank {amountFuel = defaultAmountFuel, currentFuelBar = defaulCurrentFuelBar,
+                            offsetBar = defaultOffSetBar}
+        else game
+    where
+        changeTurn t = if currentPlayer game == 1 
+            then game {player1 = t, currentPlayer = 2} 
+            else game {player2 = t, currentPlayer = 1} 
+
+
 --Funcion que 
 -- Epica funcion que
 update :: Float -> World -> World
 update seconds game =
-    let lastGame = wallBounce . movePlayer seconds . moveCannon seconds $ game
+    let lastGame = checkTurn . wallBounce . movePlayer seconds . moveCannon seconds $ game
         tank = currentTank lastGame
         tank2 = opositeTank lastGame
         hpTank2 = health tank2

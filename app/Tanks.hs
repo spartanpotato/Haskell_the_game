@@ -1,4 +1,12 @@
-module Tanks (Tank(..), player1Tank, player2Tank, angleDiff, minAngle, maxAngle) where
+module Tanks (Tank(..), 
+            player1Tank, 
+            player2Tank, 
+            angleDiff, 
+            minAngle, 
+            maxAngle,
+            defaultAmountFuel,
+            defaulCurrentFuelBar,
+            defaultOffSetBar) where
 
 import Graphics.Gloss
 import Colores
@@ -14,13 +22,19 @@ angleDiff = 5 * (pi / 180)
 minAngle = 5 * (pi / 180)
 maxAngle = 85 * (pi / 180)
 
+defaultAmountFuel, defaultOffSetBar :: Float
+defaulCurrentFuelBar :: (Float, Float, Float, Float)
+defaultAmountFuel = 100
+defaulCurrentFuelBar = (-200, 200, 180, 31)
+defaultOffSetBar = -200
+
 player1Tank :: Tank
 player1Tank = Tank {
     position = (-(fromIntegral width / 4), -(fromIntegral height / 2) + 25),
     health = 30,
     angle = 45 * (pi / 180),
-    isShooting = False,
-    currentBullet = defaultBullet,
+    isShooting = False, -- quitar
+    currentBullet = defaultBullet, --quitar
     bodySize = (60, 20),
     cannonSize = (6, 25),
     colorBody = dark $ dark green,
@@ -30,13 +44,13 @@ player1Tank = Tank {
     moveRight = False,
     direction = 0,
     fuelBar = (-200, 200, 200, 50),
-    amountFuel = 100,
-    currentFuelBar = (-200, 200, 180, 31),
+    amountFuel = defaultAmountFuel,
+    currentFuelBar = defaulCurrentFuelBar,
     barWidth = 180,
     shotUsage = 20, 
     moveUsage = 10,
     cannonUsage = 5,
-    offsetBar = -200,
+    offsetBar = defaultOffSetBar,
     percentage = "100%",
     moveUp = False,
     moveDown = False
@@ -58,13 +72,13 @@ player2Tank = Tank {
     moveRight = False,
     direction = 0,
     fuelBar = (-200, 200, 200, 50),
-    amountFuel = 100,
-    currentFuelBar = (-200, 200, 180, 31),
+    amountFuel = defaultAmountFuel,
+    currentFuelBar = defaulCurrentFuelBar,
     barWidth = 180,
     shotUsage = 20, 
     moveUsage = 10,
     cannonUsage = 5,
-    offsetBar = -200,
+    offsetBar = defaultOffSetBar,
     percentage = "100%",
     moveUp = False,
     moveDown = False
