@@ -23,7 +23,7 @@ window :: Display
 window = InWindow "Canonwars" (width, height) (offset, offset)
 
 initVelocity :: Float
-initVelocity = 100
+initVelocity = 200
 
 --Definicion color de fondo
 background :: Color

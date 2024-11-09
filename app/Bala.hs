@@ -8,6 +8,7 @@ module Bala (defaultBullet,
             updateBullet,
             collitionBullet) where
 
+import Debug.Trace (trace)
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
 import System.Random
@@ -16,7 +17,7 @@ import SharedTypes
 -- Definimos los parámetros de la simulación
 
 bulletRadius, gravity :: Float
-gravity = -40
+gravity = -100
 bulletRadius = 7/2
 
 
@@ -36,18 +37,20 @@ defaultBullet = Bullet
 -- definir la bala
 createBullet :: (Float, Float) -> Float -> Float -> Float -> Int -> StdGen -> (Bullet,StdGen)
 createBullet (xPlayer, yPlayer) length anglePlayer velPlayer idPlayer gen = 
-    let newAngle = if idPlayer == 1 then anglePlayer else (-anglePlayer + pi/2)
+    let newAngle = if idPlayer == 1 then pi/2 - anglePlayer else (-anglePlayer + pi/2)
         ((xVel, yVel),gen') = calcVelocity velPlayer newAngle gen
         (dmg, gen'') = calcDmg gen'
         (x,y) = calcPos (xPlayer, yPlayer) newAngle length 
     in (Bullet (x,y) (xVel, yVel) dmg , gen'')
 
 -- posicion de la bala para que salga delante del cañon
-calcPos::(Float,Float) -> Float -> Float -> (Float,Float)
-calcPos (xPos,yPos) angle radio =
-    let x = xPos + radio*cos(angle) + bulletRadius
-        y = yPos + radio*sin(angle) + bulletRadius
-    in (x,y)
+
+calcPos :: (Float, Float) -> Float -> Float -> (Float, Float)
+calcPos (xPos, yPos) angle radio =
+    let x = xPos + radio * cos(angle) + bulletRadius
+        y = yPos + radio * sin(angle) + bulletRadius
+        result = (x, y)
+
 
 -- calculo del vector de velocidad de la bala
 calcVelocity:: Float -> Float -> StdGen -> ((Float,Float),StdGen)
