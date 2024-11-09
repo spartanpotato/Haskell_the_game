@@ -98,6 +98,6 @@ moveCannon _ game
     newAngle 
       | (currentPlayer game) == 1 && moveUp tank = max minAngle ((angle tank) - angleDiff)
       | (currentPlayer game) == 1 && moveDown tank = min maxAngle ((angle tank) + angleDiff)
-      | (currentPlayer game) /= 1 && moveUp tank = min (-maxAngle) ((angle tank) + angleDiff)
-      | (currentPlayer game) /= 1 && moveDown tank = max (-minAngle) ((angle tank) - angleDiff)
+      | (currentPlayer game) /= 1 && moveUp tank = min (-minAngle) ((angle tank) + angleDiff)
+      | (currentPlayer game) /= 1 && moveDown tank = max (-maxAngle) ((angle tank) - angleDiff)
       | otherwise = angle tank
