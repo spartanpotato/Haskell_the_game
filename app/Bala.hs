@@ -34,11 +34,12 @@ defaultBullet = Bullet
     }
 
 -- definir la bala
-createBullet :: (Float, Float) -> Float -> Float -> Float -> StdGen -> (Bullet,StdGen)
-createBullet (xPlayer, yPlayer) length anglePlayer velPlayer gen = 
-    let ((xVel, yVel),gen') = calcVelocity velPlayer anglePlayer gen
+createBullet :: (Float, Float) -> Float -> Float -> Float -> Int -> StdGen -> (Bullet,StdGen)
+createBullet (xPlayer, yPlayer) length anglePlayer velPlayer idPlayer gen = 
+    let newAngle = if idPlayer == 1 then anglePlayer else (-anglePlayer + pi/2)
+        ((xVel, yVel),gen') = calcVelocity velPlayer newAngle gen
         (dmg, gen'') = calcDmg gen'
-        (x,y) = calcPos (xPlayer, yPlayer) anglePlayer length 
+        (x,y) = calcPos (xPlayer, yPlayer) newAngle length 
     in (Bullet (x,y) (xVel, yVel) dmg , gen'')
 
 -- posicion de la bala para que salga delante del cañon

@@ -200,7 +200,7 @@ handleKeys (EventKey (Char 'e') Up _ _) game =
         (cannonW,cannonL) = cannonSize tank
         currentAngle = angle tank
         newFuel = fuel - usage
-        (newBullet, finalGen) = createBullet (position tank) (cannonL/2) currentAngle initVelocity (gen game)
+        (newBullet, finalGen) = createBullet (position tank) (cannonL/2) currentAngle initVelocity (currentPlayer game) (gen game)
     in if (newFuel >= 0 && not(isShooting tank))
       then (updateGame (tank {amountFuel = newFuel, currentFuelBar = (offset - (usage), 200, (newFuel / 100) * barW, 31),
                             offsetBar = offset - (usage), isShooting = True,
