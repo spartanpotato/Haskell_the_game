@@ -14,6 +14,7 @@ data World = Game
     player2 :: Tank,
     pillar :: (Float, Float, Float, Float),
     currentPlayer :: Int, -- Player1=1 Player2=2
+    finnished :: Int,
     gen :: StdGen
   } deriving Show
 
@@ -25,5 +26,8 @@ initialState = Game {
     player2 = player2Tank,
     pillar = (0, -(fromIntegral height/2) + 70, 50, 100),
     currentPlayer = 2,
+    finnished = 0,
     gen = mkStdGen 0
-}    
+} 
+
+

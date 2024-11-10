@@ -50,6 +50,7 @@ calcPos (xPos, yPos) angle radio =
     let x = xPos + radio * cos(angle) + bulletRadius
         y = yPos + radio * sin(angle) + bulletRadius
         result = (x, y)
+    in result
 
 
 -- calculo del vector de velocidad de la bala
