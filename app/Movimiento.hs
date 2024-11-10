@@ -20,33 +20,37 @@ height = 480
 type Radius = Float 
 type Position = (Float, Float)
 
--- Funciones para el movimiento del tanque
+-- Funcion que devuelve el tanque del jugador actual
 currentTank :: World -> Tank
 currentTank game
   | currentPlayer game == 1 = player1 game
   | otherwise               = player2 game
 
+-- Funcion que devuelve el tanque del jugador contrario al actual
 opositeTank :: World -> Tank
 opositeTank game
   | currentPlayer game == 2 = player1 game
   | otherwise               = player2 game
 
+-- Funcion que actualiza el tanque actual
 setCurrentTank :: Tank -> World -> World
 setCurrentTank tank game
   | currentPlayer game == 1 = game { player1 = tank }
   | otherwise               = game { player2 = tank }
 
+-- Funcion que actualiza el tanque oponente
 setOppositeTank :: Tank -> World -> World
 setOppositeTank tank game
   | currentPlayer game == 1 = game { player2 = tank }
   | otherwise               = game { player1 = tank }
 
+-- Funcion que calcula la nueva posicion del tanque en funcion de la velocidad, devuelve un tanque
 updatePosition :: Float -> Tank -> Tank
 updatePosition dx tank = moveTank (+ dx) tank -- tank { position = (x + dx, y) }
   -- where
   --   (x, y) = position tank
 
-
+-- Funcion que actualiza la posicion del tanque en funcion de la velocidad y el estado actual de moveLeft y moveRight
 movePlayer :: Float -> World -> World
 movePlayer _ game
     | moveLeft tank = setCurrentTank (updatePosition (-tankVel tank) tank) game
@@ -88,6 +92,7 @@ wallBounce game =
         then game {player1 = tank {position = (x', y)}}
         else game {player2 = tank {position = (x', y)}}
 
+-- Funcion que se encarga de mover el cañon de un tanque hacia arriba o hacia abajo, dependiendo del estado de moveUp y moveDown
 moveCannon :: Float -> World -> World
 moveCannon _ game
   | moveUp tank = setCurrentTank (tank {angle = newAngle}) game

@@ -13,15 +13,18 @@ import Colores
 import Bala
 import SharedTypes
 
+-- Tamano de la ventana
 width, height :: Int
 width = 640
 height = 480
 
+-- Angulo minimo y maximo de cada tanque, cantidad de angulo que se mueve el canon.
 angleDiff, minAngle, maxAngle :: Float
 angleDiff = 5 * (pi / 180)
 minAngle = 5 * (pi / 180)
 maxAngle = 85 * (pi / 180)
 
+-- Coordenadas de barra de combustible para ambos tanques
 defaultAmountFuel, defaultOffSetBar :: Float
 defaultFuelBar, defaulCurrentFuelBar :: (Float, Float, Float, Float)
 defaultAmountFuel = 100
@@ -29,12 +32,14 @@ defaultOffSetBar = 0
 defaulCurrentFuelBar = (0, 200, 200, 31)
 defaultFuelBar = (0, 200, 200, 31)
 
+-- Coordenadas de barras de vida de ambos tanques
 defaultHealth :: Int
 defaultHealthBarPlayer1, defaultHealthBarPlayer2 :: (Float, Float, Float, Float)
 defaultHealth = 30
 defaultHealthBarPlayer1 = (- (fromIntegral width / 10) * 4, (fromIntegral height / 4), 30, 150)
 defaultHealthBarPlayer2 = ((fromIntegral width / 10) * 4, (fromIntegral height / 4), 30, 150)
 
+<<<<<<< HEAD
 newtype Pair b a = Pair { getPair :: (a,b) }
 
 instance Functor (Pair c) where
@@ -44,6 +49,9 @@ instance Functor (Pair c) where
 moveTank :: (Float -> Float) -> Tank -> Tank
 moveTank f tank = tank { position = getPair $ fmap f $ Pair (position tank) }
 
+=======
+-- Inicializacion de tanques
+>>>>>>> 833a9a2 (Comentarios)
 player1Tank :: Tank
 player1Tank = Tank {
     position = (-(fromIntegral width / 4), -(fromIntegral height / 2) + 25),
