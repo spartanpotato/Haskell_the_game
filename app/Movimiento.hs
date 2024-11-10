@@ -42,9 +42,9 @@ setOppositeTank tank game
   | otherwise               = game { player1 = tank }
 
 updatePosition :: Float -> Tank -> Tank
-updatePosition dx tank = tank { position = (x + dx, y) }
-  where
-    (x, y) = position tank
+updatePosition dx tank = moveTank (+ dx) tank -- tank { position = (x + dx, y) }
+  -- where
+  --   (x, y) = position tank
 
 
 movePlayer :: Float -> World -> World

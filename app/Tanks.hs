@@ -6,7 +6,7 @@ module Tanks (Tank(..),
             maxAngle,
             defaultAmountFuel,
             defaulCurrentFuelBar,
-            defaultOffSetBar) where
+            defaultOffSetBar, moveTank) where
 
 import Graphics.Gloss
 import Colores
@@ -34,6 +34,15 @@ defaultHealthBarPlayer1, defaultHealthBarPlayer2 :: (Float, Float, Float, Float)
 defaultHealth = 30
 defaultHealthBarPlayer1 = (- (fromIntegral width / 10) * 4, (fromIntegral height / 4), 30, 150)
 defaultHealthBarPlayer2 = ((fromIntegral width / 10) * 4, (fromIntegral height / 4), 30, 150)
+
+newtype Pair b a = Pair { getPair :: (a,b) }
+
+instance Functor (Pair c) where
+    fmap f (Pair (x,y)) = Pair(f x, y)
+
+-- función que usa fmap para mover el tanque
+moveTank :: (Float -> Float) -> Tank -> Tank
+moveTank f tank = tank { position = getPair $ fmap f $ Pair (position tank) }
 
 player1Tank :: Tank
 player1Tank = Tank {
