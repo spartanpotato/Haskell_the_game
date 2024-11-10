@@ -52,28 +52,30 @@ render game = pictures [renderTank (player1 game), renderTank (player2 game),
                         player1HealthBar, player2HealthBar, 
                         player1CurrentHealthBar, player2CurrentHealthBar,
                         player1HealthNum, player2HealthNum,
-                        mainPercent,makeBullet,
-                        finnishMessage]
+                        mainPercent, makeBullet,
+                        finnishMessage, resetMessage]
   where
     -- Funcion para renderizar un tanque
     renderTank :: Tank -> Picture
-    renderTank tank =
-        let radius = 10  -- Radio del círculo en el que gira el cañón
-            rectWidth, rectHeight :: Float
-            rectWidth = fst $ cannonSize tank
-            rectHeight = snd $ cannonSize tank  -- Longitud del cañón (aumentado)
+    renderTank tank = if (health tank > 0)
+        then
+            let radius = 10  -- Radio del círculo en el que gira el cañón
+                rectWidth, rectHeight :: Float
+                rectWidth = fst $ cannonSize tank
+                rectHeight = snd $ cannonSize tank  -- Longitud del cañón (aumentado)
 
-            -- Calcular la posición del cañón
-            cannonBaseX = radius * sin (angle tank)
-            cannonBaseY = radius * cos (angle tank) + (snd $ bodySize tank) / 2
+                -- Calcular la posición del cañón
+                cannonBaseX = radius * sin (angle tank)
+                cannonBaseY = radius * cos (angle tank) + (snd $ bodySize tank) / 2
 
-            cannon = color (colorCannon tank) $ rectangleSolid rectWidth rectHeight
+                cannon = color (colorCannon tank) $ rectangleSolid rectWidth rectHeight
 
-            translatedCannon = translate (fst $ position tank) (snd $ position tank) $
-                               translate cannonBaseX cannonBaseY $
-                               rotate ((angle tank) * 180 / pi) $ cannon
+                translatedCannon = translate (fst $ position tank) (snd $ position tank) $
+                                translate cannonBaseX cannonBaseY $
+                                rotate ((angle tank) * 180 / pi) $ cannon
 
-        in pictures [translatedCannon, uncurry translate (position tank) $ color (colorBody tank) $ rectangleSolid (fst $ bodySize tank) (snd $ bodySize tank)]
+            in pictures [translatedCannon, uncurry translate (position tank) $ color (colorBody tank) $ rectangleSolid (fst $ bodySize tank) (snd $ bodySize tank)]
+        else blank
 
     makeFloor :: Float -> Float -> Float -> Float -> Picture
     makeFloor offsetX offsetY floorWidth floorHeight = 
@@ -103,6 +105,10 @@ render game = pictures [renderTank (player1 game), renderTank (player2 game),
 
     finnishMessage = if (finnished game == 1)
         then makeMessage (-180, 0, 0.6, 0.6, black, "FINNISHED")
+        else blank
+
+    resetMessage = if (finnished game == 1)
+        then makeMessage (-168, -30, 0.15, 0.15, black, "presione 'r' para iniciar otra partida")
         else blank
 
 
@@ -271,6 +277,15 @@ handleKeys (EventKey (Char 's') Down _ _) game = if (finnished game == 0)
 handleKeys (EventKey (Char 's') Up _ _) game = updateGame (currentTank game) {moveDown = False}
     where
         updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
+
+handleKeys (EventKey (Char 'r') _ _ _) game = if (finnished game == 1)
+    then 
+        let lastPlayerTurn = currentPlayer game
+            newGame = if (lastPlayerTurn == 2) 
+                then initialState {currentPlayer = 1}
+                else initialState
+        in newGame 
+    else game
 
 
 -- Do nothing for all other events.
