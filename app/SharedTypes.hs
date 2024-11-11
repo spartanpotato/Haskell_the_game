@@ -3,9 +3,9 @@ module SharedTypes (Bullet(..), Tank(..)) where
 import Graphics.Gloss
 
 data Bullet = Bullet
-    { bPosition :: (Float, Float)
+    { bPosition :: (Float, Float)  -- (Posicion X, Posicion Y)
     , bVelocity :: (Float, Float)  -- (velocidad horizontal, velocidad vertical)
-    , bDamage :: Int
+    , bDamage :: Int  -- Daño que produce la bala
     } deriving (Show)
 
 
