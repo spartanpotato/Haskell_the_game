@@ -44,7 +44,13 @@ setOppositeTank tank game
   | currentPlayer game == 1 = game { player2 = tank }
   | otherwise               = game { player1 = tank }
 
--- Funcion que calcula la nueva posicion del tanque en funcion de la velocidad, devuelve un tanque
+-- Funcion que calcula la nueva posicion del tanque en funcion de la velocidad
+-- 
+-- Parametros:
+--   dx - Cantidad a desplazarse en el eje x
+--  tank - El tanque a desplazarse
+-- salida:
+-- El tanque con posición actualizada
 updatePosition :: Float -> Tank -> Tank
 updatePosition dx tank = moveTank (+ dx) tank -- tank { position = (x + dx, y) }
   -- where

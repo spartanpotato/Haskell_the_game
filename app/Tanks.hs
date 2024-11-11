@@ -39,19 +39,25 @@ defaultHealth = 30
 defaultHealthBarPlayer1 = (- (fromIntegral width / 10) * 4, (fromIntegral height / 4), 30, 150)
 defaultHealthBarPlayer2 = ((fromIntegral width / 10) * 4, (fromIntegral height / 4), 30, 150)
 
-<<<<<<< HEAD
+-- Definición de un nuevo tipo "Pair" que encapsula una tupla "(a, b)"
 newtype Pair b a = Pair { getPair :: (a,b) }
 
+-- Instancia de Functor para Pair
 instance Functor (Pair c) where
     fmap f (Pair (x,y)) = Pair(f x, y)
 
 -- función que usa fmap para mover el tanque
+-- 
+-- Parametros:
+--   f: Funcion a aplicar al atributo "position" del tanque .
+--  Tank: El tanque a modificar su posición.
+--
+-- salida:
+-- Tanque con su posición actualizada. 
 moveTank :: (Float -> Float) -> Tank -> Tank
 moveTank f tank = tank { position = getPair $ fmap f $ Pair (position tank) }
 
-=======
 -- Inicializacion de tanques
->>>>>>> 833a9a2 (Comentarios)
 player1Tank :: Tank
 player1Tank = Tank {
     position = (-(fromIntegral width / 4), -(fromIntegral height / 2) + 25),
