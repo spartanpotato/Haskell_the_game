@@ -1,13 +1,13 @@
 # Haskell_the_game
-##Para compilar:
+## Para compilar:
 En una terminal muevase a la carpeta app del proyecto, y use make, para limpiar ejecutables use make clean desde la misma carpeta
 
-##Para ejecutar:
+## Para ejecutar:
 Una vez compilado el programa, en la terminal, en la carpeta app, use ./main
 
-##Librerias necesarias:
--Gloss
--Random
+## Librerias necesarias:
+- Gloss
+- Random
 
 BITACORA: https://docs.google.com/document/d/1bPAGj64Dc7gKxz2paBIS54InxIzt53O7qZTqCM2f1wE/edit?usp=sharing
 
