@@ -4,17 +4,18 @@ import SharedTypes
 import Tanks
 import System.Random
 
+-- Dimensiones de la ventana
 width, height :: Int
 width = 640
 height = 480
 
---Definicion de tipo de dato que define el estado del juego, show solo esta para depurar
+-- Definicion de tipo de dato que define el estado del juego
 data World = Game
   { player1 :: Tank,
     player2 :: Tank,
-    pillar :: (Float, Float, Float, Float),
+    pillar :: (Float, Float, Float, Float), -- (offset x, offset y, width, height)
     currentPlayer :: Int, -- Player1=1 Player2=2
-    finnished :: Int,
+    finnished :: Int, -- 0 = no terminado, 1 = terminado
     gen :: StdGen
   } deriving Show
 

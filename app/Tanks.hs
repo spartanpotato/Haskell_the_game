@@ -32,9 +32,10 @@ defaultOffSetBar = 0
 defaulCurrentFuelBar = (0, 200, 200, 31)
 defaultFuelBar = (0, 200, 200, 31)
 
--- Coordenadas de barras de vida de ambos tanques
-defaultHealth :: Int
-defaultHealthBarPlayer1, defaultHealthBarPlayer2 :: (Float, Float, Float, Float)
+-- Definiciones de atributos estandar para tanques
+defaultHealth :: Int -- Vida inicial de los tanques
+-- Posiciones iniciales de las barras de vida
+defaultHealthBarPlayer1, defaultHealthBarPlayer2 :: (Float, Float, Float, Float) -- (offset x, offset y, width, height)
 defaultHealth = 30
 defaultHealthBarPlayer1 = (- (fromIntegral width / 10) * 4, (fromIntegral height / 4), 30, 150)
 defaultHealthBarPlayer2 = ((fromIntegral width / 10) * 4, (fromIntegral height / 4), 30, 150)

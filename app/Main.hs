@@ -13,7 +13,7 @@ import World
 import Vida
 import System.Random
 
---Definicion de la ventana
+-- Definicion de la ventana
 width, height, offset :: Int
 width = 640
 height = 480
@@ -25,14 +25,16 @@ window = InWindow "Canonwars" (width, height) (offset, offset)
 initVelocity :: Float
 initVelocity = 200
 
---Definicion color de fondo
+-- Definicion color de fondo
 background :: Color
 background = blue' --makeColor 0.8549 0.9961 1.0 1.0
 
---Definicion fps
+-- Definicion fps
 fps :: Int
 fps = 60
 
+-- Funcion principal que crea el juego con la ventana, fondo, fps, estado inicial
+-- funcion de renderizacion, funcion para inputs y funcion para actualizar en el tiempo
 main :: IO ()
 main = do
     gen' <- newStdGen
@@ -40,11 +42,7 @@ main = do
     play window background fps initialGame render handleKeys update
 
 
-makeMessage :: (Float, Float, Float, Float, Color, String) -> Picture
-makeMessage (offsetX, offsetY, sx, sy, color, content) = translate offsetX offsetY $ Scale sx sy $ Color color $ Text content
-
-
---Definicion de funcion para convertir estado del juego en una imagen
+-- Definicion de funcion para convertir estado del juego en una imagen
 render :: World -> Picture  
 render game = pictures [renderTank (player1 game), renderTank (player2 game), 
                         mainFloor, mainPillar, 
@@ -77,13 +75,14 @@ render game = pictures [renderTank (player1 game), renderTank (player2 game),
             in pictures [translatedCannon, uncurry translate (position tank) $ color (colorBody tank) $ rectangleSolid (fst $ bodySize tank) (snd $ bodySize tank)]
         else blank
 
+    -- Plataforma principal
     makeFloor :: Float -> Float -> Float -> Float -> Picture
     makeFloor offsetX offsetY floorWidth floorHeight = 
-        translate offsetX offsetY $ color wallColor $ rectangleSolid floorWidth floorHeight
+        translate offsetX offsetY $ color darkBlue $ rectangleSolid floorWidth floorHeight
     
-    wallColor = darkBlue -- greyN 0.5
     mainFloor = makeFloor 0 (- (fromIntegral height/2) + 10) (fromIntegral width) 20
 
+    -- Pilar
     makePillar :: (Float, Float, Float, Float) -> Picture
     makePillar (offsetX, offsetY, floorWidth, floorHeight) =
         translate offsetX offsetY $ color pillarColor $ rectangleSolid floorWidth floorHeight
@@ -91,11 +90,15 @@ render game = pictures [renderTank (player1 game), renderTank (player2 game),
     pillarColor = darkBlue -- greyN 0.5
     mainPillar = makePillar (pillar game)
 
+    -- Barra de combustible
     mainFuelBar = makeFuelBar (fuelBar (currentTank game))
     mainTotalFuel = totalFuel (currentFuelBar (currentTank game))
     mainPercent = showFuel (-85, 190, 0.2 , 0.2, amountFuel (currentTank game)) -- x = bar offset - (bar width / 2 ) - 10 
+
+    -- Bala
     makeBullet = drawBullet (currentBullet (currentTank game)) (isShooting (currentTank game))
 
+    -- Barras de vida
     player1HealthBar = makeHealthBar (healthBar (player1 game))
     player2HealthBar = makeHealthBar (healthBar (player2 game))
     player1CurrentHealthBar = totalHealth (currentHealthBar (player1 game))
@@ -103,6 +106,11 @@ render game = pictures [renderTank (player1 game), renderTank (player2 game),
     player1HealthNum = showHealth (-283, 0, 0.2 , 0.2, fromIntegral (health (player1 game)))
     player2HealthNum = showHealth (230, 0, 0.2 , 0.2, fromIntegral (health (player2 game)))
 
+    -- Toma offset, dimensiones, color y un mensaje y entrega picture con dicho mensaje
+    makeMessage :: (Float, Float, Float, Float, Color, String) -> Picture
+    makeMessage (offsetX, offsetY, sx, sy, color, content) = translate offsetX offsetY $ Scale sx sy $ Color color $ Text content
+
+    -- Mensajes de termino de juego
     finnishMessage = if (finnished game == 1)
         then makeMessage (-180, 0, 0.6, 0.6, black, "FINNISHED")
         else blank
@@ -113,14 +121,15 @@ render game = pictures [renderTank (player1 game), renderTank (player2 game),
 
 
 
-
+-- Funcion que toma el estado del juego y verifica si termino el turno de un jugador
 checkTurn :: World -> World
 checkTurn game =
     let tank = currentTank game
         currentPlayerFuel = amountFuel tank
         existsBullet = isShooting tank
-        isMoving = (moveLeft tank || moveRight tank || moveDown tank || moveUp tank)
-    in if (currentPlayerFuel <= 0 && existsBullet == False && isMoving == False)
+        isMoving = (moveLeft tank || moveRight tank || moveDown tank || moveUp tank) 
+    -- El turno termina si se acaba el combustible, el jugador dejo de moverse, y no hay balas en pantalla
+    in if (currentPlayerFuel <= 0 && existsBullet == False && isMoving == False)  
         then changeTurn tank {amountFuel = defaultAmountFuel, currentFuelBar = defaulCurrentFuelBar,
                             offsetBar = defaultOffSetBar}
         else game
@@ -129,6 +138,10 @@ checkTurn game =
             then game {player1 = t, currentPlayer = 2} 
             else game {player2 = t, currentPlayer = 1} 
 
+
+-- Funcion que toma el estado del juego y verifica si este termino
+-- Se usa despues de checkTurn por lo que no verifica las condiciones de movimiento, y balas de este
+-- Define que el juego termina si la vida de uno de lo jugadores llega a 0
 checkEnd :: World -> World
 checkEnd game =
     let tank1Health = health $ player1 game
@@ -138,11 +151,10 @@ checkEnd game =
         else game 
 
 
-
---Funcion que 
--- Epica funcion que
+-- Funcion que en actualiza el estado del juego cada segundo
 update :: Float -> World -> World
 update seconds game =
+    -- Define el estado del juego anterior despues de verificar colisiones del jugador
     let lastGame = wallBounce . movePlayer seconds . moveCannon seconds $ game
         tank = currentTank lastGame
         tank2 = opositeTank lastGame
@@ -164,14 +176,15 @@ update seconds game =
                                                 widthHealth, if newHeight >= 0 then newHeight else 0)}  
                 else tank2
         updatedTank = tank { currentBullet = updatedBullet, isShooting = (shot && not(isCollitionPillar) && not (isCollition)) }
-        -- Establecer el tanque actualizado en el juego
+    -- Establecer el tanque actualizado en el juego y verificar turno y termino de juego
     in checkEnd . checkTurn . setCurrentTank updatedTank $ setOppositeTank updatedTank2 lastGame
 
 
--- Respond to key events.
+-- Funcion para responder inputs del usuario
 handleKeys :: Event -> World -> World
 
 -- Up : indica que tecla fue presionada, Down : indica que una tecla ha sido soltada
+-- Generalidades: a, w, s, d, y e verifican que el juego haya terminado y el jugador tenga suficiente combustible
 
 -- Player se mueve a la izquierda con a
 handleKeys (EventKey (Char 'a') Down _ _) game = if (finnished game == 0)
@@ -238,7 +251,7 @@ handleKeys (EventKey (Char 'e') Up _ _) game = if (finnished game == 0)
     else game
     where updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
 
--- Gasto al usar el cañon
+-- Cañon rota hacia arriba con w
 handleKeys (EventKey (Char 'w') Down _ _) game = if (finnished game == 0)
     then
         let tank = currentTank game
@@ -254,11 +267,12 @@ handleKeys (EventKey (Char 'w') Down _ _) game = if (finnished game == 0)
     else game
     where updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
 
+-- Cañon deja de moverse al soltar w
 handleKeys (EventKey (Char 'w') Up _ _) game = updateGame (currentTank game) {moveUp = False}
     where
         updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
 
--- Gasto al usar el cañon
+-- Cañon apunta hacia abajo al presionar s
 handleKeys (EventKey (Char 's') Down _ _) game = if (finnished game == 0)
     then
         let tank = currentTank game
@@ -274,10 +288,12 @@ handleKeys (EventKey (Char 's') Down _ _) game = if (finnished game == 0)
     else game
     where updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
 
+-- Cañon deja de moverse al soltar s
 handleKeys (EventKey (Char 's') Up _ _) game = updateGame (currentTank game) {moveDown = False}
     where
         updateGame t = if currentPlayer game == 1 then game {player1 = t} else game {player2 = t}
 
+-- Si el juego termino se puede reiniciar con r, dandole el turno al jugador que perdio por defecto
 handleKeys (EventKey (Char 'r') _ _ _) game = if (finnished game == 1)
     then 
         let lastPlayerTurn = currentPlayer game
@@ -288,5 +304,5 @@ handleKeys (EventKey (Char 'r') _ _ _) game = if (finnished game == 1)
     else game
 
 
--- Do nothing for all other events.
+-- El resto de teclas no cambian el estado del juego
 handleKeys _ game = game

@@ -1,19 +1,15 @@
 # Nombre del ejecutable final
 TARGET = main
 
-# Archivos fuente de Haskell
+# Archivos fuente 
 SOURCES = $(wildcard *.hs)
 
-# Compilar el proyecto
+# Compilar 
 all: $(TARGET)
 
 $(TARGET): $(SOURCES)
 	ghc -o $(TARGET) $(SOURCES)
 
-# Limpiar archivos generados
+# Limpiar 
 clean:
 	rm -f $(TARGET) *.hi *.o
-
-# Limpiar todo, incluyendo el ejecutable
-dist-clean: clean
-	rm -f $(TARGET)

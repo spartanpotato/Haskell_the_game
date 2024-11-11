@@ -13,10 +13,12 @@ import Tanks
 import World
 import Bala
 
+-- Dimensiones de la ventana
 width, height :: Int
 width = 640
 height = 480
 
+-- Sinonimos para colisiones
 type Radius = Float 
 type Position = (Float, Float)
 
@@ -65,7 +67,7 @@ movePlayer _ game
     where
         tank = currentTank game
 
-
+-- Toma un dato bala, las dimensiones de un pilar y devuelve si hay colision entre estos
 collitionPillar :: Bullet -> (Float, Float, Float, Float) -> Bool
 collitionPillar bullet (x,y,w,h) =
     let (bX,bY) = bPosition bullet
@@ -74,6 +76,7 @@ collitionPillar bullet (x,y,w,h) =
     in (bX >= x-halfW && bX<=x+halfW && bY >= y-halfH && bY <=y+halfH)
 
 
+-- Toma el centro y radio de un tanque y devuelve si hay colision con los bordes de la ventana
 wallCollision :: Position -> Radius -> Bool 
 wallCollision (x, _) radius = leftCollision || rightCollision || leftPillarCollision || rightPillarCollision
   where
